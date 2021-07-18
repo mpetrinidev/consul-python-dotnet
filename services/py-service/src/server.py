@@ -1,5 +1,5 @@
+import hashlib
 import os
-import uuid
 from asyncio import sleep
 from urllib.parse import urlparse, urljoin
 
@@ -30,11 +30,13 @@ def health():
 
 if __name__ == '__main__':
     http_addr = urljoin(api_url, 'health')
+    hash_service_id = hashlib.md5(api_url.encode())
+    service_id = hash_service_id.hexdigest()
 
     while True:
         try:
             c.agent.service.register(name="py-service",
-                                     service_id=str(uuid.uuid4()),
+                                     service_id=service_id,
                                      address=api_url_parse.hostname,
                                      port=api_url_parse.port,
                                      check=Check.http(http_addr, '1s', timeout='5s'))

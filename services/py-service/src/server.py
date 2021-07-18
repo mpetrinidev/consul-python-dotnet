@@ -12,7 +12,7 @@ Options:
     --host-consul <host>    Host that holds consul server.
     --port-consul <number>  Port where the consul server listens.
 """
-
+import uuid
 from asyncio import sleep
 
 from flask import Flask
@@ -29,7 +29,7 @@ _HOST_CONSUL = _opts['--host-consul']
 _PORT_CONSUL = int(_opts['--port-consul'])
 
 
-c = consul.Consul(host=_HOST_CONSUL, port=_PORT_CONSUL)
+c = consul.Consul(host=_HOST_CONSUL, port=_PORT_CONSUL, dc="dc1")
 
 
 @app.route('/', methods=['GET'])
@@ -40,7 +40,7 @@ def home():
 if __name__ == '__main__':
     while True:
         try:
-            service = c.agent.service.register(name="py-service", address=_HOST, port=_PORT)
+            c.agent.service.register(name="py-service", service_id=str(uuid.uuid4()), address=_HOST, port=_PORT)
             break
         except (ConnectionError, consul.ConsulException) as e:
             print(f'Reconnecting: {str(e)}')

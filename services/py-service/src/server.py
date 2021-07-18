@@ -1,35 +1,20 @@
-"""
-Runs the service on your local machine.
-
-Usage:
-    ./server.py run [options]
-    ./server.py --help
-
-Options:
-    -h --help               Show this text.
-    --host <host>           Host that holds the server.
-    --port <port>           Port where the server listens for request.
-    --host-consul <host>    Host that holds consul server.
-    --port-consul <number>  Port where the consul server listens.
-"""
+import os
 import uuid
 from asyncio import sleep
+from urllib.parse import urlparse, urljoin
 
+import consul
 from consul import Check
 from flask import Flask, Response
-from docopt import docopt
-import consul
 
 app = Flask(__name__)
 
-_opts = docopt(__doc__)
+api_url = os.environ['API_URL']
+api_url_parse = urlparse(api_url)
 
-_HOST = _opts['--host']
-_PORT = int(_opts['--port'])
-_HOST_CONSUL = _opts['--host-consul']
-_PORT_CONSUL = int(_opts['--port-consul'])
+consul_url_parse = urlparse(os.environ['CONSUL_URL'])
 
-c = consul.Consul(host=_HOST_CONSUL, port=_PORT_CONSUL, dc="dc1")
+c = consul.Consul(host=consul_url_parse.hostname, port=consul_url_parse.port)
 
 
 @app.route('/', methods=['GET'])
@@ -44,19 +29,18 @@ def health():
 
 
 if __name__ == '__main__':
-    http_addr = f'http://{_HOST}:{_PORT}/health'
-    print(http_addr)
+    http_addr = urljoin(api_url, 'health')
 
     while True:
         try:
             c.agent.service.register(name="py-service",
                                      service_id=str(uuid.uuid4()),
-                                     address=_HOST,
-                                     port=_PORT,
+                                     address=api_url_parse.hostname,
+                                     port=api_url_parse.port,
                                      check=Check.http(http_addr, '1s', timeout='5s'))
             break
         except (ConnectionError, consul.ConsulException) as e:
             print(f'Reconnecting: {str(e)}')
             sleep(0.5)
 
-    app.run(host=_HOST, port=_PORT)
+    app.run(host=api_url_parse.hostname, port=api_url_parse.port)

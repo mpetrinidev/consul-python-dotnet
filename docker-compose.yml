@@ -5,7 +5,7 @@ services:
     container_name: badger
     restart: always
     networks:
-      - consul-services
+      - default
     ports:
       - "8500:8500"
       - "8600:8600/tcp"
@@ -16,7 +16,7 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - consul-services
+      - default
     depends_on:
       - consul
     restart: always
@@ -25,5 +25,6 @@ services:
       CONSUL_URL: "http://consul:8500"
 
 networks:
-  consul-services:
+  default:
+    name: consul-services
     driver: bridge

@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  consul:
+    image: consul
+    container_name: badger
+    restart: always
+    networks:
+      - consul-services
+    ports:
+      - "8500:8500"
+      - "8600:8600/tcp"
+      - "8600:8600/udp"
+    command: "agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0"
+  py-service:
+    build: ./services/py-service/
+    ports:
+      - "8080:8080"
+    networks:
+      - consul-services
+    depends_on:
+      - consul
+    restart: always
+    environment:
+      API_URL: "http://py-service:8080"
+      CONSUL_URL: "http://consul:8500"
+
+networks:
+  consul-services:
+    driver: bridge

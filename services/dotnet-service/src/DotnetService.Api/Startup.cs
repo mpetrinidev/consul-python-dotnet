@@ -1,15 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Consul.AspNetCore;
+using DotnetService.Api.HostedServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
 namespace DotnetService.Api
@@ -26,7 +22,12 @@ namespace DotnetService.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddConsul(options =>
+            {
+                options.Address = new Uri(Environment.GetEnvironmentVariable("CONSUL_URL") ?? "", UriKind.Absolute);
+            });
+            
+            services.AddHostedService<ConsulHostedService>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

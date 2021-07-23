@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Consul;
+using Flurl;
 using Microsoft.Extensions.Hosting;
 
 namespace DotnetService.Api.HostedServices
@@ -24,21 +25,44 @@ namespace DotnetService.Api.HostedServices
         
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            var agentServiceCheck = new AgentServiceCheck
+            {
+                HTTP = Url.Combine(_apiUrl.ToString(), "/health"),
+                Interval = TimeSpan.FromSeconds(1),
+                Timeout = TimeSpan.FromSeconds(5)
+            };
+            
             var agentServiceRegistration = new AgentServiceRegistration
             {
                 Address = _apiUrl.Host,
                 ID = _id,
                 Name = "dotnet-service",
-                Port = _apiUrl.Port
+                Port = _apiUrl.Port,
+                Check = agentServiceCheck
             };
             
             //Should handle this result
-            _ = await _consulClient.Agent.ServiceRegister(agentServiceRegistration, cancellationToken);
+            try
+            {
+                _ = await _consulClient.Agent.ServiceRegister(agentServiceRegistration, cancellationToken);
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _ = await _consulClient.Agent.ServiceDeregister(_id, cancellationToken);
+            //Should handle this result
+            try
+            {
+                _ = await _consulClient.Agent.ServiceDeregister(_id, cancellationToken);
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         private static string Md5(string s)

@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Consul.AspNetCore" Version="1.6.10.2" />
+    <PackageReference Include="Flurl" Version="3.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
   </ItemGroup>
 

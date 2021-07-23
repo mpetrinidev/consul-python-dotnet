@@ -11,8 +11,25 @@ services:
       - "8600:8600/tcp"
       - "8600:8600/udp"
     command: "agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0"
+  dotnet-service:
+    build: ./services/dotnet-service/
+    image: dotnet-service
+    container_name: dotnet-service-container
+    ports:
+      - "5003:80"
+    networks: 
+      - default
+    depends_on: 
+      - consul
+    restart: always
+    environment:
+      ASPNETCORE_URLS: "http://dotnet-service:5003"
+      API_URL: "http://dotnet-service:5003"
+      CONSUL_URL: "http://consul:8500"
   py-service:
     build: ./services/py-service/
+    image: py-service
+    container_name: py-service-container
     ports:
       - "8080:8080"
     networks:

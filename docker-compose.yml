@@ -24,7 +24,6 @@ services:
     restart: always
     environment:
       ASPNETCORE_URLS: "http://dotnet-service:5003"
-      API_URL: "http://dotnet-service:5003"
       CONSUL_URL: "http://consul:8500"
   py-service:
     build: ./services/py-service/

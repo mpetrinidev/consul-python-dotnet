@@ -14,7 +14,7 @@ namespace DotnetService.Api.HostedServices
         private readonly string _id;
         private readonly Uri _apiUrl;
 
-        private static string ApiUrl => Environment.GetEnvironmentVariable("API_URL") ?? "";
+        private static string ApiUrl => Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "";
 
         public ConsulHostedService(IConsulClient consulClient)
         {

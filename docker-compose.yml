@@ -11,10 +11,10 @@ services:
       - "8600:8600/tcp"
       - "8600:8600/udp"
     command: "agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0"
-  dotnet-service:
+  dotnet-service-1:
     build: ./services/dotnet-service/
     image: dotnet-service
-    container_name: dotnet-service-container
+    container_name: dotnet-service-container-1
     ports:
       - "5003:80"
     networks: 
@@ -23,12 +23,26 @@ services:
       - consul
     restart: always
     environment:
-      ASPNETCORE_URLS: "http://dotnet-service:5003"
+      ASPNETCORE_URLS: "http://dotnet-service-1:5003"
       CONSUL_URL: "http://consul:8500"
-  py-service:
+  dotnet-service-2:
+    build: ./services/dotnet-service/
+    image: dotnet-service
+    container_name: dotnet-service-container-2
+    ports:
+      - "5004:80"
+    networks: 
+      - default
+    depends_on: 
+      - consul
+    restart: always
+    environment:
+      ASPNETCORE_URLS: "http://dotnet-service-2:5004"
+      CONSUL_URL: "http://consul:8500"
+  py-service-1:
     build: ./services/py-service/
     image: py-service
-    container_name: py-service-container
+    container_name: py-service-container-1
     ports:
       - "8080:8080"
     networks:
@@ -37,7 +51,21 @@ services:
       - consul
     restart: always
     environment:
-      API_URL: "http://py-service:8080"
+      API_URL: "http://py-service-1:8080"
+      CONSUL_URL: "http://consul:8500"
+  py-service-2:
+    build: ./services/py-service/
+    image: py-service
+    container_name: py-service-container-2
+    ports:
+      - "8081:8081"
+    networks:
+      - default
+    depends_on:
+      - consul
+    restart: always
+    environment:
+      API_URL: "http://py-service-2:8081"
       CONSUL_URL: "http://consul:8500"
 
 networks:
